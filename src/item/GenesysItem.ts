@@ -22,6 +22,8 @@ export default class GenesysItem<ItemDataModel extends foundry.abstract.DataMode
 	}
 
 	protected override async _preCreate(data: PreDocumentId<this['_source']>, options: DocumentModificationContext<this>, user: foundry.documents.BaseUser) {
+		console.log('pre-create this: ', this._source); // TODO Remove this eventually.
+		console.log('pre-create systemData: ', this.systemData); // TODO Remove this eventually.
 		await (<IHasPreCreate<this>>this.systemData).preCreate?.(this, data, options, user);
 
 		return super._preCreate(data, options, user);

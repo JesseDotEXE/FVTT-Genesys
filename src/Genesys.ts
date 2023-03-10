@@ -20,6 +20,9 @@ import { register as registerActors } from '@/actor';
 import { register as registerEffects } from '@/effects';
 import { register as registerItems } from '@/item';
 
+// TODO Don't actually keep this here.
+import { TestCreateCompendiumAndImport } from '@/importers/TestImporter';
+
 import './scss/index.scss';
 
 async function doAlphaNotice() {
@@ -101,6 +104,9 @@ Hooks.once('init', async () => {
 Hooks.once('ready', async () => {
 	registerStoryPointTracker();
 	await doAlphaNotice();
+
+	// TODO Testing the importer
+	await TestCreateCompendiumAndImport()
 
 	readyConfigs();
 });
