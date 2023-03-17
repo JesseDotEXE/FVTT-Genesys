@@ -16,6 +16,6 @@ Setting up the System.
 
 8. Yarn Install
 
-9. Yarn Dev to dev.
+9. Yarn Dev to load locally.
 
 10. Yarn Build to deploy.
