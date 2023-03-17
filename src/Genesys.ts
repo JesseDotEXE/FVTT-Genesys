@@ -49,7 +49,8 @@ async function doAlphaNotice() {
 	<div style="text-align: center">@symbol[satfhd]</div>
 	<h4 style="font-family: 'Bebas Neue', sans-serif">Bug Fixes & Updates</h4>
 	<ul style="margin-top: 0">
-		<li>Special thanks to <a href="http://milkmyth.com">MilkMyth</a> for allowing me to use their Magical Girl symbol set! Go to Settings to switch to it; also supported in Dice So Nice!</li>
+		<li>Fixed <a href="https://github.com/Mezryss/FVTT-Genesys/issues/35">#35</a>: Active talents with no active category were listed twice.</li>
+		<li>Fixed <a href="https://github.com/Mezryss/FVTT-Genesys/issues/36">#36</a>: Career item sheet was not showing editor view.</li>
 	</ul>
 	<h4 style="font-family: 'Bebas Neue', sans-serif">Roadmap</h4>
 	<ul style="margin-top: 0">
