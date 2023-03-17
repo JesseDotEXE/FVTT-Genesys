@@ -21,7 +21,7 @@ import { register as registerEffects } from '@/effects';
 import { register as registerItems } from '@/item';
 
 // TODO Don't actually keep this here.
-import { TestCreateCompendiumAndImport } from '@/importers/TestImporter';
+import { ImportGearCompendium } from '@/importers/GearImporter';
 
 import './scss/index.scss';
 
@@ -107,7 +107,7 @@ Hooks.once('ready', async () => {
 	await doAlphaNotice();
 
 	// TODO Testing the importer
-	await TestCreateCompendiumAndImport()
+	await ImportGearCompendium('Temp Gear', 'tempData/gear.json')
 
 	readyConfigs();
 });
