@@ -49,20 +49,30 @@ const testGearData = [
 ];
 
 export async function ImportGearCompendium(compendiumName: string, fileName: string) {
-	// console.log('JV | CreateGearCompendium | game: ', game);
-	// console.log('JV | CreateGearCompendium | CONFIG: ', CONFIG);
-
 	const gear = getData();
-	console.log('JV | gear: ', gear);
+	const pack = await findOrCreateCompendium(compendiumName);
+	const importedGearList = parseGear(gear);
 
-	const pack = await createCompendium(compendiumName);
-	console.log('JV | ImportGearCompendium | pack: ', pack);
+	// @ts-ignore
+	const existingGearList = await pack.getDocuments();
 
-	const foundryGearList = parseGear(gear);
-	console.log('JV | ImportGearCompendium | foundryGearList: ', foundryGearList);
+	for (const gear of importedGearList) {
+		const currentImportId = gear?.flags?.importId;
+		// @ts-ignore
+		const existingCompendiumDocument = getExistingDocumentFromCompendium(existingGearList, currentImportId);
 
-	for (const gear of foundryGearList) {
-		await pack.importDocument(gear);
+		if (!existingCompendiumDocument) {
+			console.debug(`Creating new document with name [${gear.name}]`);
+
+			await pack.importDocument(gear);
+		} else {
+			const idToDelete = existingCompendiumDocument.id;
+			console.debug(`Replacing document with name [${gear.name}]`);
+
+			pack.delete(idToDelete);
+			await Item.deleteDocuments([idToDelete], { pack: pack.metadata.id }); // TODO Make this smarter.
+			await pack.importDocument(gear);
+		}
 	}
 }
 
@@ -78,7 +88,7 @@ function parseGear(importedGear: GearImportObject[]): GenesysItem<EquipmentDataM
 
 	for (const gear of importedGear) {
 		const foundryGearData = {
-			"_id": null, // leave null
+			"_id": null, // leave null to populate
 			name: gear.name,
 			type: 'gear',
 			img: "icons/svg/item-bag.svg", // default
@@ -92,11 +102,14 @@ function parseGear(importedGear: GearImportObject[]): GenesysItem<EquipmentDataM
 			},
 			effects: [], // leave empty
 			folder: null, // leave null
+			flags: {
+				importId: kebabCase(gear.name), // might need to convert this to a unique id from the imported data
+			},
+			// Leave the below commented out for reference.
 			// sort: 0,
 			// ownership: {
 			// 	default: 0,
 			// },
-			// flags: {},
 			// "_stats": {
 			// 	"systemId": null,
 			// 	"systemVersion": null,
@@ -114,6 +127,10 @@ function parseGear(importedGear: GearImportObject[]): GenesysItem<EquipmentDataM
 	return parsedGearList;
 }
 
+function getExistingDocumentFromCompendium(compendiumDocuments: GenesysItem[], importId: Record<string, unknown> | undefined) {
+	return compendiumDocuments.find(doc => doc?.flags?.importId === importId);
+}
+
 /**
  * This function doesn't work at the moment. Need to figure out a way to open .json files when built.
  * @param fileName
@@ -127,15 +144,25 @@ async function fetchJSON(fileName: string): Promise<object> {
 	return jsonResults;
 }
 
-async function createCompendium(compendiumName: string): Promise<CompendiumCollection> {
-	return CompendiumCollection.createCompendium({
-		id: kebabCase(compendiumName), // Unique id
-		label: compendiumName, // Foundry in app label
-		name: kebabCase(compendiumName), // The physical file name, must be unique
-		packageName: "", // ??? Optional ???
-		packageType: "system", // keep as system
-		path: "", // ??? Optional ???
-		system: "genesys", // keep as genesys
-		type: "Item" // keep as Item
-	});
+async function findOrCreateCompendium(compendiumName: string): Promise<CompendiumCollection> {
+	const formattedLookupName = `world.${kebabCase(compendiumName)}`;
+	let pack = game.packs.get(formattedLookupName);
+
+	if (!pack) {
+		console.log(`Creating compendium with name [${formattedLookupName}].`);
+		return CompendiumCollection.createCompendium({
+			id: kebabCase(compendiumName), // Unique id
+			label: compendiumName, // Foundry in app label
+			name: kebabCase(compendiumName), // The physical file name, must be unique
+			packageName: "", // ??? Optional ???
+			packageType: "system", // keep as system
+			path: "", // ??? Optional ???
+			system: "genesys", // keep as genesys
+			type: "Item" // keep as Item
+		});
+	} else {
+		console.log(`Found compendium with name [${formattedLookupName}].`);
+	}
+
+	return pack;
 }
